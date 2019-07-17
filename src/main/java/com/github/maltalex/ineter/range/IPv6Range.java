@@ -15,10 +15,12 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.github.maltalex.ineter.base.IPv4Address;
 import com.github.maltalex.ineter.base.IPv6Address;
 
 public class IPv6Range implements IPRange<IPv6Address, BigInteger> {
 
+	private static final BigInteger INTEGER_MAX_VALUE = new BigInteger(IPv4Address.of(Integer.MAX_VALUE).toArray());
 	private static final long serialVersionUID = 1L;
 
 	public static IPv6Range of(IPv6Address firstAddress, IPv6Address lastAddress) {
@@ -129,7 +131,7 @@ public class IPv6Range implements IPRange<IPv6Address, BigInteger> {
 			return false;
 		return true;
 	}
-	
+
 	@Override
 	public String toString() {
 		return String.format("%s - %s", this.getFirst().toString(), this.getLast().toString());
@@ -206,5 +208,10 @@ public class IPv6Range implements IPRange<IPv6Address, BigInteger> {
 		} while (lastAddress.compareTo(this.lastAddress) < 0);
 
 		return result;
+	}
+
+	@Override
+	public int intLength() {
+		return this.length().compareTo(INTEGER_MAX_VALUE) >= 0 ? Integer.MAX_VALUE : this.length().intValue();
 	}
 }

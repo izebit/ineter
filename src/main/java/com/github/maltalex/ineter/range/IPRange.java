@@ -8,6 +8,7 @@
 package com.github.maltalex.ineter.range;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -15,7 +16,8 @@ import java.util.function.Function;
 
 import com.github.maltalex.ineter.base.IPAddress;
 
-public interface IPRange<I extends IPAddress & Comparable<I>, L extends Number & Comparable<L>> extends Iterable<I>, Serializable {
+public interface IPRange<I extends IPAddress & Comparable<I>, L extends Number & Comparable<L>>
+		extends Iterable<I>, Serializable {
 
 	static <T> T parseRange(String from, BiFunction<String, String, ? extends T> rangeProducer,
 			Function<String, ? extends T> subnetProducer) {
@@ -59,7 +61,7 @@ public interface IPRange<I extends IPAddress & Comparable<I>, L extends Number &
 	 *            the range to check for overlap
 	 * @return true if the given range overlaps with this one
 	 */
-	default boolean overlaps(IPRange<I,L> range) {
+	default boolean overlaps(IPRange<I, L> range) {
 		// Either one of the ends of the other range is within this one
 		// Or this range is completely inside the other range. In that case,
 		// it's enough to check just one of the edges of this range
@@ -84,7 +86,7 @@ public interface IPRange<I extends IPAddress & Comparable<I>, L extends Number &
 	 *            range to check
 	 * @return true if the entire given range is contained within this range
 	 */
-	default boolean contains(IPRange<I,L> range) {
+	default boolean contains(IPRange<I, L> range) {
 		return this.contains(range.getFirst()) && this.contains(range.getLast());
 	}
 
@@ -94,6 +96,15 @@ public interface IPRange<I extends IPAddress & Comparable<I>, L extends Number &
 	 * @return number of addresses in the range
 	 */
 	public L length();
+
+	/**
+	 * Returns the number of addresses in the range
+	 * 
+	 * If the number is larger than Integer.MAX_VALUE, returns Integer.MAX_VALUE
+	 * 
+	 * @return number of addresses in the range, up to Integer.MAX_VALUE
+	 */
+	public int intLength();
 
 	@Override
 	default Iterator<I> iterator() {
@@ -130,5 +141,20 @@ public interface IPRange<I extends IPAddress & Comparable<I>, L extends Number &
 	 *
 	 * @return a list of Subnets that compose this address range
 	 */
-	public List<? extends IPSubnet<I,L>> toSubnets();
+	public List<? extends IPSubnet<I, L>> toSubnets();
+
+	/**
+	 * Returns the list of addresses contained in the range. The list is
+	 * {@link IPRange#intLength()} elements long (up to Integer.MAX_VALUE)
+	 * 
+	 * @return The list of addresses contained in the range
+	 */
+	default List<I> toList() {
+		ArrayList<I> list = new ArrayList<>(this.intLength());
+		Iterator<I> iter = this.iterator();
+		for (int i = 0; i < this.intLength(); i++) {
+			list.add(iter.next());
+		}
+		return list;
+	}
 }
